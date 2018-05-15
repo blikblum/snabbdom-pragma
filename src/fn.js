@@ -34,13 +34,6 @@ export const deepifyKeys = (obj) => mapObject(obj,
   }
 )
 
-export const renameMod = (name) => {
-  switch (name) {
-    case 'data': return 'dataset'
-    default: return name
-  }
-}
-
 export const flatifyKeys = (obj) => mapObject(obj,
   (mod, data) => !is.object(data) ? ({ [mod]: data }) : mapObject(
     flatifyKeys(data),
