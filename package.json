@@ -1,6 +1,6 @@
 {
-  "name": "snabbdom-pragma",
-  "version": "2.6.0",
+  "name": "snabbdom-pragma-lite",
+  "version": "3.0.0",
   "description": "'NotReact.createElement' pragma although for snabbdom",
   "keywords": [
     "snabbdom",
@@ -13,8 +13,11 @@
     "Traceur"
   ],
   "author": "Swizz <gerodel.quentin@gmail.com>",
+  "contributors": [
+    "Luiz Américo Pereira Câmara"
+  ],
   "license": "MIT",
-  "repository": "git@github.com:Swizz/snabbdom-pragma.git",
+  "repository": "blikblum/snabbdom-pragma",
   "main": "dist/index.js",
   "module": "dist/index.es6.js",
   "types": "snabbdom-pragma.d.ts",
@@ -35,9 +38,7 @@
     "typescript": "^2.3.2",
     "xo": "^0.18.2"
   },
-  "dependencies": {
-    "extend": "^3.0.1"
-  },
+  "dependencies": {},
   "scripts": {
     "lint": "./node_modules/.bin/xo",
     "test:prebuild": "ava --match \"trans -*\" --match \"src -*\" --match \"utils -*\"",

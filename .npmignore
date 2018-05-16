@@ -1,0 +1,7 @@
+.vscode/
+.travis.yml
+src/
+lib/
+perf/
+test/
+yarn.lock
