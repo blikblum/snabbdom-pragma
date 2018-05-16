@@ -2,8 +2,6 @@
 import * as is from './is'
 import * as fn from './fn'
 
-// Const fnName = (...params) => guard ? default : ...
-
 const createTextElement = (text) => !is.text(text) ? undefined : {
   text,
   sel: undefined,
@@ -13,18 +11,26 @@ const createTextElement = (text) => !is.text(text) ? undefined : {
   key: undefined
 }
 
-const considerSvg = (vnode) => !is.svg(vnode) ? vnode :
-  fn.assign(vnode,
-    { data: fn.omit('props', fn.extend(vnode.data,
-      { ns: 'http://www.w3.org/2000/svg', attrs: fn.omit('className', fn.extend(vnode.data.props,
-        { class: vnode.data.props ? vnode.data.props.className : undefined }
-      )) }
-    )) },
-    { children: is.undefinedv(vnode.children) ? undefined :
-      vnode.children.map((child) => considerSvg(child))
+const considerSvg = (vnode) => {
+  if (is.svg(vnode)) {    
+    const data = vnode.data
+    const props = data.props    
+    data.attrs || (data.attrs = {})    
+    if (props) {
+      if (props.className) {
+        props.class = props.className
+        delete props.className
+      }
+      // ensure props do not override predefined attrs
+      fn.assign(props, data.attrs)      
+      fn.assign(data.attrs, props)
+      delete data.props
     }
-  )
-
+    data.ns = 'http://www.w3.org/2000/svg'
+    vnode.children && vnode.children.forEach(considerSvg)
+  }
+  return vnode
+}
 
 const getText = (children) => children.length > 1 || !is.text(children[0]) ? undefined : children[0]
 

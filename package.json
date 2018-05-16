@@ -36,7 +36,7 @@
     "xo": "^0.18.2"
   },
   "dependencies": {
-    "extend": "^3.0.0"
+    "extend": "^3.0.1"
   },
   "scripts": {
     "lint": "./node_modules/.bin/xo",
