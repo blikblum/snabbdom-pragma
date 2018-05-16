@@ -46,7 +46,9 @@ const modulesMap = {
 const forcedAttrsMap = {
   for: 'attrs', 
   role: 'attrs', 
-  tabindex: 'attrs'
+  tabindex: 'attrs',
+  colspan: 'attrs',
+  rowspan: 'attrs'
 }
 
 const mapPropsToData = (props) => {
