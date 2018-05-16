@@ -20,34 +20,9 @@ export const reduceDeep = (arr, fn, initial) => {
   return result
 }
 
-export const mapObject = (obj, fn) => {
-  return Object.keys(obj)
-    .map(key => fn(key, obj[key]))
-    .reduce((acc, curr) => extend(acc, curr), {})
+export const omit = (omitKey, obj) => {
+  return Object.keys(obj).reduce((acc, key) => {
+    if (key !== omitKey) acc[key] = obj[key]
+    return acc
+  }, {})
 }
-
-export const deepifyKeys = (obj) => mapObject(obj,
-  (key, val) => {
-    const dashIndex = key.indexOf('-')
-    if (dashIndex > -1) {
-      const moduleData = {
-        [key.slice(dashIndex + 1)]: val
-      }
-      return {
-        [key.slice(0, dashIndex)]: moduleData
-      }
-    }
-    return { [key]: val }
-  }
-)
-
-export const flatifyKeys = (obj) => mapObject(obj,
-  (mod, data) => !is.object(data) ? ({ [mod]: data }) : mapObject(
-    flatifyKeys(data),
-    (key, val) => ({ [`${mod}-${key}`]: val })
-  )
-)
-
-export const omit = (key, obj) => mapObject(obj,
-  (mod, data) => mod !== key ? ({ [mod]: data }) : {}
-)
