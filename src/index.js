@@ -1,8 +1,8 @@
 
-import * as is from './is'
-import * as fn from './fn'
+import {isFunction, isObject, isSvg, isText, isVnode} from './is'
+import {reduceDeep, assign} from './fn'
 
-const createTextElement = (text) => !is.text(text) ? undefined : {
+const createTextElement = (text) => !isText(text) ? undefined : {
   text,
   sel: undefined,
   data: undefined,
@@ -12,7 +12,7 @@ const createTextElement = (text) => !is.text(text) ? undefined : {
 }
 
 const considerSvg = (vnode) => {
-  if (is.svg(vnode)) {    
+  if (isSvg(vnode)) {    
     const data = vnode.data
     const props = data.props    
     data.attrs || (data.attrs = {})    
@@ -22,8 +22,8 @@ const considerSvg = (vnode) => {
         delete props.className
       }
       // ensure props do not override predefined attrs
-      fn.assign(props, data.attrs)      
-      fn.assign(data.attrs, props)
+      assign(props, data.attrs)      
+      assign(data.attrs, props)
       delete data.props
     }
     data.ns = 'http://www.w3.org/2000/svg'
@@ -32,7 +32,7 @@ const considerSvg = (vnode) => {
   return vnode
 }
 
-const getText = (children) => children.length > 1 || !is.text(children[0]) ? undefined : children[0]
+const getText = (children) => children.length > 1 || !isText(children[0]) ? undefined : children[0]
 
 const modulesMap = {
   data: 'dataset',
@@ -73,20 +73,20 @@ const mapPropsToData = (props) => {
       moduleKey = key
     }
     moduleData = data[module] || (data[module] = {})
-    is.object(value) && (key in modulesMap) ? fn.assign(moduleData, value) : moduleData[moduleKey] = value
+    isObject(value) && (key in modulesMap) ? assign(moduleData, value) : moduleData[moduleKey] = value
   }
   return data
 }
 
-const sanitizeChildren = (children) => fn.reduceDeep(children, (acc, child) => {
-      const vnode = is.vnode(child) ? child : createTextElement(child)
+const sanitizeChildren = (children) => reduceDeep(children, (acc, child) => {
+      const vnode = isVnode(child) ? child : createTextElement(child)
       acc.push(vnode)
       return acc
     }
   , [])
 
 export const createElement = (sel, props, ...children) => {  
-  if (is.fun(sel)) {
+  if (isFunction(sel)) {
     return sel(props || {}, children)
   } else {
     const text = getText(children) 
