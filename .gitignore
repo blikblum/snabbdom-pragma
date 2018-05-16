@@ -5,3 +5,5 @@ demo.js
 demo.ts
 demo.tsx
 tsconfig.json
+/lib/
+/.vscode/
