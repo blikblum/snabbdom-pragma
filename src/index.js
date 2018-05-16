@@ -1,5 +1,5 @@
 
-import {isFunction, isObject, isSvg, isText, isVnode} from './is'
+import {isFunction, isObject, isSvg, isText, isVnode, isString} from './is'
 import {reduceDeep, assign} from './fn'
 
 const createTextElement = (text) => !isText(text) ? undefined : {
@@ -99,6 +99,23 @@ export const createElement = (sel, props, ...children) => {
       key: props ? props.key : undefined
     })
   }  
+}
+
+export const addModules = (modules) => {
+  modules.forEach(module => {
+    if (isString(module)) {
+      modulesMap[module] = module
+    } else {
+      // assume array
+      modulesMap[module[0]] = module[1]
+    }
+  })
+}
+
+export const removeModules = (modules) => {
+  modules.forEach(module => {
+    delete modulesMap[module]
+  })
 }
 
 export default {
