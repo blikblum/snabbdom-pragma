@@ -36,11 +36,12 @@ const getText = (children) => children.length > 1 || !isText(children[0]) ? unde
 
 const modulesMap = {
   data: 'dataset',
-  on: 'on',
+  props: 'props',
   attrs: 'attrs',
   style: 'style',
   class: 'class',
-  hook: 'hook'
+  hook: 'hook',
+  on: 'on'
 }
 
 const forcedAttrsMap = {
