@@ -11,7 +11,7 @@ export const isText = (v) => isString(v) || isNumber(v)
 
 export const isArray = (v) => Array.isArray(v)
 
-export const isObject = (v) => typeof v === 'object' && Boolean(v)
+export const isObject = (v) => typeof v === 'object' && v !== null
 
 export const isFunction = (v) => typeof v === 'function'
 
