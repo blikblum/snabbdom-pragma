@@ -9,7 +9,7 @@ export const isString = (v) => typeof v === 'string'
 
 export const isText = (v) => isString(v) || isNumber(v)
 
-export const isArray = (v) => Array.isArray(v)
+export const isArray = Array.isArray
 
 export const isObject = (v) => typeof v === 'object' && v !== null
 
