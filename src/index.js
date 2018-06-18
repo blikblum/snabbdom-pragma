@@ -1,6 +1,6 @@
 /* eslint one-var: 0 */
 
-import { isFunction, isObject, isSvg, isText, isVnode, isString } from './is'
+import { isFunction, isObject, isText, isVnode, isString } from './is'
 import { reduceDeep, assign } from './fn'
 
 const createTextElement = (text) => !isText(text) ? undefined : {
@@ -12,27 +12,25 @@ const createTextElement = (text) => !isText(text) ? undefined : {
   key: undefined
 }
 
-const considerSvg = (vnode) => {
-  if (isSvg(vnode)) {
-    const data = vnode.data
-    const props = data.props
-    if (!data.attrs) {
-      data.attrs = {}
+const transformSvg = (vnode) => {
+  const data = vnode.data
+  const props = data.props
+  if (!data.attrs) {
+    data.attrs = {}
+  }
+  if (props) {
+    if (props.className) {
+      props.class = props.className
+      delete props.className
     }
-    if (props) {
-      if (props.className) {
-        props.class = props.className
-        delete props.className
-      }
-      // ensure props do not override predefined attrs
-      assign(props, data.attrs)
-      assign(data.attrs, props)
-      delete data.props
-    }
-    data.ns = 'http://www.w3.org/2000/svg'
-    if (vnode.children) {
-      vnode.children.forEach(considerSvg)
-    }
+    // ensure props do not override predefined attrs
+    assign(props, data.attrs)
+    assign(data.attrs, props)
+    delete data.props
+  }
+  data.ns = 'http://www.w3.org/2000/svg'
+  if (vnode.children) {
+    vnode.children.forEach(transformSvg)
   }
   return vnode
 }
@@ -100,14 +98,18 @@ export const createElement = (sel, props, ...children) => {
     return sel(props || {}, children)
   }
   const text = getText(children)
-  return considerSvg({
+  const vnode = {
     sel,
     data: props ? mapPropsToData(props) : {},
     children: text ? undefined : sanitizeChildren(children),
     text,
     elm: undefined,
     key: props ? props.key : undefined
-  })
+  }
+  if (sel === 'svg') {
+    transformSvg(vnode)
+  }
+  return vnode
 }
 
 export const addModules = (modules) => {
