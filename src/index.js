@@ -56,7 +56,7 @@ const forcedAttrsMap = {
 }
 
 const mapPropsToData = (props) => {
-  let module, moduleKey, moduleData, value, dashIndex, prefix
+  let module, moduleKey, moduleData, value, objectValue, dashIndex, prefix
   const data = {}
   for (const key in props) {
     // skip key. Already set
@@ -65,6 +65,7 @@ const mapPropsToData = (props) => {
     }
 
     value = props[key]
+    objectValue = isObject(value)
     dashIndex = key.indexOf('-')
     if (dashIndex > -1) {
       prefix = key.slice(0, dashIndex)
@@ -75,13 +76,17 @@ const mapPropsToData = (props) => {
         module = prefix === 'aria' ? 'attrs' : 'props'
         moduleKey = key
       }
+    } else if (key === 'class' && !objectValue) {
+      // treat class specially
+      module = 'props'
+      moduleKey = 'className'
     } else {
       // resolve module: mapped > forced attr > props
       module = modulesMap[key] || forcedAttrsMap[key] || 'props'
       moduleKey = key
     }
     moduleData = data[module] || (data[module] = {})
-    isObject(value) && (key in modulesMap) ? assign(moduleData, value) : moduleData[moduleKey] = value // eslint-disable-line no-unused-expressions
+    objectValue && (key in modulesMap) ? assign(moduleData, value) : moduleData[moduleKey] = value // eslint-disable-line no-unused-expressions
   }
   return data
 }
