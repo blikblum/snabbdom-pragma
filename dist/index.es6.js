@@ -4,18 +4,13 @@ var isString = function (v) { return typeof v === 'string'; };
 
 var isText = function (v) { return isString(v) || isNumber(v); };
 
-var isArray = function (v) { return Array.isArray(v); };
+var isArray = Array.isArray;
 
-var isObject = function (v) { return typeof v === 'object' && !!v; };
+var isObject = function (v) { return typeof v === 'object' && v !== null; };
 
 var isFunction = function (v) { return typeof v === 'function'; };
 
 var isVnode = function (v) { return isObject(v) && 'sel' in v && 'data' in v && 'children' in v && 'text' in v; };
-
-var svgPropsMap = {svg: 1, circle: 1, ellipse: 1, line: 1, polygon: 1,
-polyline: 1, rect: 1, g: 1, path: 1, text: 1};  
-
-var isSvg = function (v) { return v.sel in svgPropsMap; };
 
 var assign = Object.assign;
 
@@ -27,10 +22,12 @@ var reduceDeep = function (arr, fn, initial) {
       result = reduceDeep(value, fn, result);
     } else {
       result = fn(result, value);
-    }    
+    }
   }
   return result
 };
+
+/* eslint one-var: 0 */
 
 var createTextElement = function (text) { return !isText(text) ? undefined : {
   text: text,
@@ -41,23 +38,25 @@ var createTextElement = function (text) { return !isText(text) ? undefined : {
   key: undefined
 }; };
 
-var considerSvg = function (vnode) {
-  if (isSvg(vnode)) {    
-    var data = vnode.data;
-    var props = data.props;    
-    data.attrs || (data.attrs = {});    
-    if (props) {
-      if (props.className) {
-        props.class = props.className;
-        delete props.className;
-      }
-      // ensure props do not override predefined attrs
-      assign(props, data.attrs);      
-      assign(data.attrs, props);
-      delete data.props;
+var transformSvg = function (vnode) {
+  var data = vnode.data;
+  var props = data.props;
+  if (!data.attrs) {
+    data.attrs = {};
+  }
+  if (props) {
+    if (props.className) {
+      props.class = props.className;
+      delete props.className;
     }
-    data.ns = 'http://www.w3.org/2000/svg';
-    vnode.children && vnode.children.forEach(considerSvg);
+    // ensure props do not override predefined attrs
+    assign(props, data.attrs);
+    assign(data.attrs, props);
+    delete data.props;
+  }
+  data.ns = 'http://www.w3.org/2000/svg';
+  if (vnode.children) {
+    vnode.children.forEach(transformSvg);
   }
   return vnode
 };
@@ -75,66 +74,76 @@ var modulesMap = {
 };
 
 var forcedAttrsMap = {
-  for: 'attrs', 
-  role: 'attrs', 
+  for: 'attrs',
+  role: 'attrs',
   tabindex: 'attrs',
   colspan: 'attrs',
   rowspan: 'attrs'
 };
 
 var mapPropsToData = function (props) {
-  var module, moduleKey, moduleData, value, dashIndex, prefix;  
-  var data = {};  
+  var module, moduleKey, moduleData, value, objectValue, dashIndex, prefix;
+  var data = {};
   for (var key in props) {
     // skip key. Already set
-    if (key === 'key') { continue }
+    if (key === 'key') {
+      continue
+    }
 
     value = props[key];
+    objectValue = isObject(value);
     dashIndex = key.indexOf('-');
     if (dashIndex > -1) {
-      prefix = key.slice(0, dashIndex);      
-      if (module = modulesMap[prefix]) {
-        moduleKey = key.slice(dashIndex + 1);        
+      prefix = key.slice(0, dashIndex);
+      if (module = modulesMap[prefix]) { // eslint-disable-line no-cond-assign
+        moduleKey = key.slice(dashIndex + 1);
       } else {
         // map aria to attrs module
         module = prefix === 'aria' ? 'attrs' : 'props';
-        moduleKey = key;        
+        moduleKey = key;
       }
+    } else if (key === 'class' && !objectValue) {
+      // treat class specially
+      module = 'props';
+      moduleKey = 'className';
     } else {
       // resolve module: mapped > forced attr > props
       module = modulesMap[key] || forcedAttrsMap[key] || 'props';
       moduleKey = key;
     }
     moduleData = data[module] || (data[module] = {});
-    isObject(value) && (key in modulesMap) ? assign(moduleData, value) : moduleData[moduleKey] = value;
+    objectValue && (key in modulesMap) ? assign(moduleData, value) : moduleData[moduleKey] = value; // eslint-disable-line no-unused-expressions
   }
   return data
 };
 
 var sanitizeChildren = function (children) { return reduceDeep(children, function (acc, child) {
-      var vnode = isVnode(child) ? child : createTextElement(child);
-      acc.push(vnode);
-      return acc
-    }
+  var vnode = isVnode(child) ? child : createTextElement(child);
+  acc.push(vnode);
+  return acc
+}
   , []); };
 
 var createElement = function (sel, props) {
   var children = [], len = arguments.length - 2;
   while ( len-- > 0 ) children[ len ] = arguments[ len + 2 ];
-  
+
   if (isFunction(sel)) {
     return sel(props || {}, children)
-  } else {
-    var text = getText(children); 
-    return considerSvg({
-      sel: sel,
-      data: props ? mapPropsToData(props) : {},
-      children: text ? undefined : sanitizeChildren(children),
-      text: text,
-      elm: undefined,
-      key: props ? props.key : undefined
-    })
-  }  
+  }
+  var text = getText(children);
+  var vnode = {
+    sel: sel,
+    data: props ? mapPropsToData(props) : {},
+    children: text ? undefined : sanitizeChildren(children),
+    text: text,
+    elm: undefined,
+    key: props ? props.key : undefined
+  };
+  if (sel === 'svg') {
+    transformSvg(vnode);
+  }
+  return vnode
 };
 
 var addModules = function (modules) {
@@ -158,4 +167,5 @@ var index = {
   createElement: createElement
 };
 
-export { createElement, addModules, removeModules };export default index;
+export default index;
+export { createElement, addModules, removeModules };
