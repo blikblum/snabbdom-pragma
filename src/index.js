@@ -38,7 +38,7 @@ const transformSvg = (vnode) => {
 const getText = (children) => children.length > 1 || !isText(children[0]) ? undefined : children[0]
 
 const modulesMap = {
-  data: 'dataset',
+  dataset: 'dataset',
   props: 'props',
   attrs: 'attrs',
   style: 'style',
@@ -72,8 +72,8 @@ const mapPropsToData = (props) => {
       if (module = modulesMap[prefix]) { // eslint-disable-line no-cond-assign
         moduleKey = key.slice(dashIndex + 1)
       } else {
-        // map aria to attrs module
-        module = prefix === 'aria' ? 'attrs' : 'props'
+        // map data and aria to attrs module
+        module = (prefix === 'data' || prefix === 'aria') ? 'attrs' : 'props'
         moduleKey = key
       }
     } else if (key === 'class' && !objectValue) {
