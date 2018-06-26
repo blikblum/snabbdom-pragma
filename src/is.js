@@ -15,4 +15,4 @@ export const isObject = (v) => typeof v === 'object' && v !== null
 
 export const isFunction = (v) => typeof v === 'function'
 
-export const isVnode = (v) => isObject(v) && 'sel' in v && 'data' in v && 'children' in v && 'text' in v
+export const isVnode = (v) => isObject(v) && 'sel' in v && 'data' in v
