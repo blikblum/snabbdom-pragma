@@ -10,7 +10,7 @@ var isObject = function (v) { return typeof v === 'object' && v !== null; };
 
 var isFunction = function (v) { return typeof v === 'function'; };
 
-var isVnode = function (v) { return isObject(v) && 'sel' in v && 'data' in v && 'children' in v && 'text' in v; };
+var isVnode = function (v) { return isObject(v) && 'sel' in v && 'data' in v; };
 
 var assign = Object.assign;
 
@@ -64,7 +64,7 @@ var transformSvg = function (vnode) {
 var getText = function (children) { return children.length > 1 || !isText(children[0]) ? undefined : children[0]; };
 
 var modulesMap = {
-  data: 'dataset',
+  dataset: 'dataset',
   props: 'props',
   attrs: 'attrs',
   style: 'style',
@@ -98,8 +98,8 @@ var mapPropsToData = function (props) {
       if (module = modulesMap[prefix]) { // eslint-disable-line no-cond-assign
         moduleKey = key.slice(dashIndex + 1);
       } else {
-        // map aria to attrs module
-        module = prefix === 'aria' ? 'attrs' : 'props';
+        // map data and aria to attrs module
+        module = (prefix === 'data' || prefix === 'aria') ? 'attrs' : 'props';
         moduleKey = key;
       }
     } else if (key === 'class' && !objectValue) {
